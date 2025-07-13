@@ -89,7 +89,6 @@ void execute_external(char **args, t_env *env_list)
         printf("Command not found: %s\n", args[0]);
         return;
     }
-
     pid = fork();
     if (pid == 0)
     {
@@ -99,13 +98,7 @@ void execute_external(char **args, t_env *env_list)
         perror("execve");
         exit(EXIT_FAILURE);
     }
-    else if (pid > 0)
-    {
-        waitpid(pid, &status, 0);
-    }
     else
-    {
-        perror("fork");
-    }
+        waitpid(pid, &status, 0);
     free(cmd_path);
 }

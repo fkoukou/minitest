@@ -4,18 +4,18 @@
 #include <errno.h>
 #include <string.h>
 
-int builtin_pwd(char *cached_pwd)
+int builtin_pwd(void)
 {
-    char buf[PATH_MAX];
+    // char buf[PATH_MAX];
     char *cwd;
 
-    if (cached_pwd && cached_pwd[0] != '\0')
-    {
-        printf("%s\n", cached_pwd);
-        return 0;
-    }
+    // if (cached_pwd && cached_pwd[0] != '\0')
+    // {
+    //     printf("%s\n", cached_pwd);
+    //     return 0;
+    // }
 
-    cwd = getcwd(buf, sizeof(buf));
+    cwd = getcwd(NULL, 0);
     if (cwd)
     {
         printf("%s\n", cwd);

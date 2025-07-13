@@ -2,10 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <limits.h>
 #include <ctype.h>
 
-// Fonction utilitaire : vérifie si la chaîne est un nombre valide pour exit
+// Vérifie que arg est un entier valide (avec option + ou - en début, sans caractères non numériques ensuite)
 static bool is_numeric_argument(const char *arg)
 {
     int i = 0;
@@ -25,9 +24,10 @@ static bool is_numeric_argument(const char *arg)
     if (!isdigit((unsigned char)arg[i]))
         return false;
 
+    // Vérifie que tout est chiffre (pas d'espaces intermédiaires)
     while (arg[i])
     {
-        if (!isdigit((unsigned char)arg[i]) && !isspace((unsigned char)arg[i]))
+        if (!isdigit((unsigned char)arg[i]))
             return false;
         i++;
     }
@@ -41,12 +41,12 @@ int builtin_exit(char **args)
     printf("exit\n");
 
     if (!args[1])
-        exit(0); // Pas d’argument -> exit 0
+        exit(0);
 
     if (!is_numeric_argument(args[1]))
     {
         fprintf(stderr, "exit: %s: numeric argument required\n", args[1]);
-        exit(255); // code 2 dans l’exemple, mais conventionnellement 255
+        exit(255);
     }
 
     exit_code = strtol(args[1], NULL, 10);
@@ -54,7 +54,7 @@ int builtin_exit(char **args)
     if (args[2])
     {
         fprintf(stderr, "exit: too many arguments\n");
-        return 1; // ne quitte pas le shell si trop d’arguments
+        return 1; // ne quitte pas, mais indique erreur
     }
 
     exit(exit_code % 256);

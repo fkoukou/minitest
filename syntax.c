@@ -93,6 +93,7 @@ t_command       *parse_command(t_token **tokens)
                 if (*tokens)
                     *tokens = (*tokens)->next;
         }
+    
         return (cmd);
 }
 

@@ -67,7 +67,7 @@ typedef enum e_quote_type1
 } t_quote_type1;
 
 
-
+char *find_in_path(char *cmd, t_env *env_list);
 int ft_strlen(char *s1);
 char *ft_strdup(char *s1);
 t_redirect      *new_redirect(int type, char *file, int quote);
@@ -100,20 +100,22 @@ int is_q_or_non(char *input, int len);
 
 // builtins
 int builtin_cd(t_env *env, char **args);
-int builtin_echo(char **args);
+int builtin_echo(char **args, t_env *env_list);
 int builtin_env(t_env *env_list, char **args);
 int builtin_exit(char **args);
 int builtin_export(char **args, t_env **env_list);
-int builtin_pwd(char *cached_pwd);
+int builtin_pwd(void);
 int builtin_unset(char **args, t_env **env_list);
-
-
-int execute_builtins(t_env *env_list, char **args, char *cached_pwd);
+void execute_command(char **args, t_env *env_list);
+// minishell.h
+char *ft_strjoin_free(char *s1, const char *s2);
+char *expand_arg(char *arg, t_env *env_list);
+// Dans minishell.h (ou fichier header)
+int execute_builtins(t_env **env_list, t_command *cmd);
 void rediriger_heredoc(char *delimiter,t_env *env_list);
 void rediriger_entree(const char *fichier);
 void rediriger_sortie(const char *fichier);
 void rediriger_sortie_append(const char *fichier);
-
 
 void    remove_quotes(char **str);
 void    read_heredoc(char *delimiter);
@@ -131,7 +133,9 @@ void free_env_array(char **env_array);
 char *get_env_value(t_env *env_list, const char *key);
 t_quote_type1 check_type_quotes1(const char *input, int len);
 void remove_surrounding_quotes(char **str);
-
-
+void pipeline(t_env **env_list, t_command *cmd_list,size_t nb_cmd);
+void	setup_signal_handlers(void);
+void	signal_handler_sigquit(int signo);
+void	signal_handler_sigint(int signo);
 
 #endif
