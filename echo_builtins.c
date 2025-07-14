@@ -1,60 +1,4 @@
 #include "minishell.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-
-
-// Cette fonction doit parser input en tokens en respectant les guillemets
-// et en gardant les espaces dans les guillemets.
-
-char **tokenize_echo_args(char *input)
-{
-    char **args = malloc(sizeof(char *) * 256); // taille max arbitraire
-    int argc = 0;
-    int i = 0, start = 0;
-    bool in_single_quote = false, in_double_quote = false;
-
-    while (input[i])
-    {
-        if (input[i] == '\'' && !in_double_quote)
-            in_single_quote = !in_single_quote;
-        else if (input[i] == '"' && !in_single_quote)
-            in_double_quote = !in_double_quote;
-        else if (!in_single_quote && !in_double_quote && input[i] == ' ')
-        {
-            if (i > start)
-            {
-                int len = i - start;
-                char *arg = malloc(len + 1);
-                strncpy(arg, &input[start], len);
-                arg[len] = '\0';
-                args[argc++] = arg;
-            }
-            start = i + 1;
-        }
-        i++;
-    }
-
-    if (i > start)
-    {
-        int len = i - start;
-        char *arg = malloc(len + 1);
-        strncpy(arg, &input[start], len);
-        arg[len] = '\0';
-        args[argc++] = arg;
-    }
-
-    args[argc] = NULL;
-    return args;
-}
-#include "minishell.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-#include <stdlib.h>
-
-// Expansion d'une variable $VAR
 char *expand_arg(char *arg, t_env *env_list)
 {
     char *result = malloc(1);
@@ -81,7 +25,6 @@ char *expand_arg(char *arg, t_env *env_list)
     return result;
 }
 
-// Version avec free de s1
 char *ft_strjoin_free(char *s1, const char *s2)
 {
     char *joined;
@@ -94,7 +37,6 @@ char *ft_strjoin_free(char *s1, const char *s2)
     return joined;
 }
 
-// Fonction echo avec prise en compte de l’expansion
 int builtin_echo(char **args, t_env *env_list)
 {
     int i = 1;

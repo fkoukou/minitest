@@ -1,22 +1,13 @@
-# ==============================
-#          CONFIGURATION
-# ==============================
-
 NAME    = minishell
 SRCS = main.c add_token.c env.c herdooc.c cd_builtins.c env_builtins.c pipe.c \
        export_builtins.c free.c check_quotes.c expand.c helper.c helper1.c \
        Redirection.c syntax.c token.c pwd_builtins.c unset_builtins.c  \
-       execute_builtin.c execute_command.c signal.c echo_builtins.c exit_builtins.c execute_external.c
+       execute_builtin.c  utils.c ft_splitc.c signal.c echo_builtins.c exit_builtins.c execute_external.c
 
 OBJS    = $(SRCS:.c=.o)
 
 CC      = gcc
 CFLAGS  = -Wall -Wextra -Werror
-
-# ==============================
-#           RULES
-# ==============================
-
 all: $(NAME)
 
 $(NAME): $(OBJS)

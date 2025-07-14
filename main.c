@@ -1,12 +1,5 @@
 #include "minishell.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <string.h>
-#include <limits.h>
-#include <sys/wait.h>
+
 
 
 
@@ -31,23 +24,13 @@ int main(int argc, char **argv, char **envp)
     t_env *env_list = create_env(envp);
     setup_signal_handlers();
     char *input = NULL;
-    char cwd[PATH_MAX];
-    char prompt[PATH_MAX + 3];
+  
     t_token *tokens = NULL;
     t_command *cmd_list = NULL;
-    // char *infile = NULL;
-    // char *outfile = NULL;
-    // int append = 0;
 
     while (1)
     {
-        // Affichage du prompt dynamique
-        if (getcwd(cwd, sizeof(cwd)) != NULL)
-            snprintf(prompt, sizeof(prompt), "%s$ ", cwd);
-        else
-            snprintf(prompt, sizeof(prompt), "$ ");
-
-        input = readline(prompt);
+        input = readline("minishell> ");
         if (!input)
         {
             printf("exit\n");
@@ -69,16 +52,13 @@ int main(int argc, char **argv, char **envp)
             free(input);
             continue;
         }
-        // Parsing en structure de commandes
         cmd_list = parse_pipeline(&tokens);
 
         if (!cmd_list)
         {
-            // free_tokens(tokens);
             free(input);
             continue;
         }
-        // Exécution des commandes
             size_t nb_cmd =  size_cmd(cmd_list);
             if(nb_cmd == 1)
             {

@@ -1,16 +1,12 @@
 #include "minishell.h"
-#include <stdio.h>
 
 int builtin_env(t_env *env_list, char **args)
 {
-    // int i = 0;
-
     if (args && args[1])
     {
         fprintf(stderr, "env: too many arguments\n");
         return 2; 
     }
-
     if (!env_list)
         return 1; 
 

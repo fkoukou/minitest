@@ -5,6 +5,21 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+#include <string.h>
+#include <limits.h>
+#include <sys/wait.h>
+#include <limits.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 # ifndef PATH_MAX
@@ -55,6 +70,7 @@ typedef struct s_redirect
 typedef struct	s_command
 {
 	char	**args;
+        int heredoc_pipe_fd;
 	t_redirect	*redirects;
 	struct s_command *next_pipe;
 } t_command;
@@ -106,7 +122,7 @@ int builtin_exit(char **args);
 int builtin_export(char **args, t_env **env_list);
 int builtin_pwd(void);
 int builtin_unset(char **args, t_env **env_list);
-void execute_command(char **args, t_env *env_list);
+// void execute_command(char **args, t_env *env_list);
 // minishell.h
 char *ft_strjoin_free(char *s1, const char *s2);
 char *expand_arg(char *arg, t_env *env_list);
@@ -117,7 +133,7 @@ void rediriger_entree(const char *fichier);
 void rediriger_sortie(const char *fichier);
 void rediriger_sortie_append(const char *fichier);
 
-void    remove_quotes(char **str);
+// void    remove_quotes(char **str);
 void    read_heredoc(char *delimiter);
 int is_quoted(const char *str);
 
@@ -137,5 +153,11 @@ void pipeline(t_env **env_list, t_command *cmd_list,size_t nb_cmd);
 void	setup_signal_handlers(void);
 void	signal_handler_sigquit(int signo);
 void	signal_handler_sigint(int signo);
+char **ft_split(char const *s, char c);
+char *remove_quotes(const char *str);
+int	ft_isdigit(int c);
+int ft_strcmp(const char *s1, const char *s2);
+char *expand_heredoc_line(const char *line, t_env *env_list);
+void handle_heredoc(char *raw_delimiter, t_env *env_list, t_command *cmd);
 
-#endif
+#endif  

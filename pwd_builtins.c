@@ -6,15 +6,7 @@
 
 int builtin_pwd(void)
 {
-    // char buf[PATH_MAX];
     char *cwd;
-
-    // if (cached_pwd && cached_pwd[0] != '\0')
-    // {
-    //     printf("%s\n", cached_pwd);
-    //     return 0;
-    // }
-
     cwd = getcwd(NULL, 0);
     if (cwd)
     {

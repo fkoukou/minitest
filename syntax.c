@@ -56,13 +56,11 @@ char    **add_arg(char *value, char **arg)
         while (j < i)
         {
             new_arg[j] = arg[j];
-            // new_arg[j] = ft_strdup(arg[j]);
-            // printf("%s\n", new_arg[j]);
+           
             j++;
         }
         new_arg[j++] = value;
         new_arg[j] = NULL;
-        //free_arg(arg);//hadi ma3rftch wach 5asni n alloci l kola argimant bo7do wla n 2aloci nichan l colchi f 7alat 5dmt hi haka 4atkfi free(arg) ila b4it n2aloci 7ta l5rin 4an7taj strdup
         return (new_arg);
 }
 

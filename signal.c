@@ -7,10 +7,10 @@
 void sigint_handler(int signo)
 {
     (void)signo;
-    write(1, "\n", 1);           // saut de ligne
-    rl_on_new_line();           // readline à une nouvelle ligne
-    rl_replace_line("", 0);     // efface la ligne courante
-    rl_redisplay();             // rafraîchit le prompt + ligne vide
+    write(1, "\n", 1);          
+    rl_on_new_line();           
+    rl_replace_line("", 0);     
+    rl_redisplay();             
 }
 
 
@@ -21,9 +21,8 @@ void setup_signal_handlers(void)
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler = sigint_handler;
     sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART;  // important pour readline
+    sa.sa_flags = SA_RESTART;  
     sigaction(SIGINT, &sa, NULL);
 
-    // Ignorer SIGQUIT (Ctrl-\)
     signal(SIGQUIT, SIG_IGN);
 }

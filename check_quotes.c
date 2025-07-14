@@ -20,16 +20,11 @@ int     check_quotes(char *input, int i)
 t_quote_type    ft_next_tq(int single_q, int double_q, int none_q)
 {
         if (!double_q && !single_q && none_q)
-                return (Q_NONE);// --> expand
-        if (single_q && !double_q && !none_q)//'$user' mime len
-                return (Q_SINGLE);// --> non expand
-        if (!single_q && double_q && !none_q )// "$user" virifer
-                return (Q_DOUBLE);// --> expand
-        //!single_q && !double_q && !none_q imposible tkon
-        //!singlce_q && double_q && none_q// "$user"$user --> expand
-        //single_q && !double_q && none_q// '$user'$user --> expand
-        //single_q && double_q && none_q// "$user"'$user'$user --> expand
-        //single_q && double_q && !none_q// "$user"'$user' --> expand
+                return (Q_NONE);
+        if (single_q && !double_q && !none_q)
+                return (Q_SINGLE);
+        if (!single_q && double_q && !none_q )
+                return (Q_DOUBLE);
         return (Q_DANDS);
 }
 

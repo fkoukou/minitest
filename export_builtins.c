@@ -4,7 +4,6 @@
 #include <string.h>
 #include <ctype.h>
 
-// Fonction utilitaire pour vérifier clé valide (lettres, chiffres, underscore, pas chiffre en premier)
 static int is_valid_env_var_key(const char *key)
 {
     int i = 0;
@@ -22,7 +21,6 @@ static int is_valid_env_var_key(const char *key)
     return 1;
 }
 
-// Fonction qui modifie ou ajoute une variable d'environnement dans la liste chaînée
 void set_env_var(t_env **env_list, const char *key, const char *value)
 {
     t_env *tmp = *env_list;
@@ -37,7 +35,6 @@ void set_env_var(t_env **env_list, const char *key, const char *value)
         }
         tmp = tmp->next;
     }
-    // Pas trouvé : ajout en tête
     t_env *new_node = malloc(sizeof(t_env));
     new_node->key = strdup(key);
     new_node->value = strdup(value ? value : "");
@@ -45,7 +42,6 @@ void set_env_var(t_env **env_list, const char *key, const char *value)
     *env_list = new_node;
 }
 
-// Affiche la liste d'env dans le format declare -x, récursivement pour l'ordre inverse
 void print_export_reverse(t_env *env_list)
 {
     if (!env_list)
@@ -54,7 +50,6 @@ void print_export_reverse(t_env *env_list)
     printf("declare -x %s=\"%s\"\n", env_list->key, env_list->value);
 }
 
-// Fonction principale export
 int builtin_export(char **args, t_env **env_list)
 {
     if (!args[1])

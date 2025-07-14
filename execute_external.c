@@ -92,7 +92,6 @@ void execute_external(char **args, t_env *env_list)
     pid = fork();
     if (pid == 0)
     {
-        // Convert env_list to array
         char **envp = env_list_to_array(env_list);
         execve(cmd_path, args, envp);
         perror("execve");

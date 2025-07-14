@@ -1,16 +1,11 @@
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-#include <limits.h>
+
 #include "minishell.h"
 
 static char *get_env_value1(t_env *env, const char *key)
 {
     while (env)
     {
-        if (strcmp(env->key, key) == 0)
+        if (ft_strcmp(env->key, key) == 0)
             return env->value;
         env = env->next;
     }
@@ -21,7 +16,7 @@ static void set_env_value1(t_env *env, const char *key, const char *value)
 {
     while (env)
     {
-        if (strcmp(env->key, key) == 0)
+        if (ft_strcmp(env->key, key) == 0)
         {
             free(env->value);
             env->value = strdup(value);

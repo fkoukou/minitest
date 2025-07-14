@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-// Vérifie que arg est un entier valide (avec option + ou - en début, sans caractères non numériques ensuite)
 static bool is_numeric_argument(const char *arg)
 {
     int i = 0;
@@ -12,19 +11,15 @@ static bool is_numeric_argument(const char *arg)
     if (!arg)
         return false;
 
-    // Ignore espaces initiaux
     while (arg[i] && isspace((unsigned char)arg[i]))
         i++;
 
-    // Signe optionnel
     if (arg[i] == '+' || arg[i] == '-')
         i++;
 
-    // Au moins un chiffre doit suivre
     if (!isdigit((unsigned char)arg[i]))
         return false;
 
-    // Vérifie que tout est chiffre (pas d'espaces intermédiaires)
     while (arg[i])
     {
         if (!isdigit((unsigned char)arg[i]))
@@ -54,7 +49,7 @@ int builtin_exit(char **args)
     if (args[2])
     {
         fprintf(stderr, "exit: too many arguments\n");
-        return 1; // ne quitte pas, mais indique erreur
+        return 1; 
     }
 
     exit(exit_code % 256);
