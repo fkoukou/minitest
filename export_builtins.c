@@ -1,93 +1,73 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   export_builtins.c                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fakoukou <fakoukou@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/16 06:24:01 by fakoukou          #+#    #+#             */
+/*   Updated: 2025/07/16 07:59:08 by fakoukou         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
 
-static int is_valid_env_var_key(const char *key)
+static void	free_key_value(char *key, char *value)
 {
-    int i = 0;
-
-    if (!key || !key[0])
-        return 0;
-    if (isdigit((unsigned char)key[0]))
-        return 0;
-    while (key[i])
-    {
-        if (!isalnum((unsigned char)key[i]) && key[i] != '_')
-            return 0;
-        i++;
-    }
-    return 1;
+	free(key);
+	if (value)
+		free(value);
 }
 
-void set_env_var(t_env **env_list, const char *key, const char *value)
+static void	extract_key_value(char *arg, char **key, char **value)
 {
-    t_env *tmp = *env_list;
+	char	*equal;
+	int		key_len;
 
-    while (tmp)
-    {
-        if (strcmp(tmp->key, key) == 0)
-        {
-            free(tmp->value);
-            tmp->value = strdup(value ? value : "");
-            return;
-        }
-        tmp = tmp->next;
-    }
-    t_env *new_node = malloc(sizeof(t_env));
-    new_node->key = strdup(key);
-    new_node->value = strdup(value ? value : "");
-    new_node->next = *env_list;
-    *env_list = new_node;
+	equal = strchr(arg, '=');
+	if (equal)
+	{
+		key_len = equal - arg;
+		*key = strndup(arg, key_len);
+		*value = strdup(equal + 1);
+	}
+	else
+	{
+		*key = strdup(arg);
+		*value = NULL;
+	}
 }
 
-void print_export_reverse(t_env *env_list)
+static void	handle_export_arg(char *arg, t_env **env_list)
 {
-    if (!env_list)
-        return;
-    print_export_reverse(env_list->next);
-    printf("declare -x %s=\"%s\"\n", env_list->key, env_list->value);
+	char	*key;
+	char	*value;
+
+	extract_key_value(arg, &key, &value);
+	if (!is_valid_env_var_key(key))
+	{
+		fprintf(stderr, "export: `%s': not a valid identifier\n", key);
+		free_key_value(key, value);
+		return ;
+	}
+	set_env_var(env_list, key, value);
+	free_key_value(key, value);
 }
 
-int builtin_export(char **args, t_env **env_list)
+int	builtin_export(char **args, t_env **env_list)
 {
-    if (!args[1])
-    {
-        print_export_reverse(*env_list);
-        return 0;
-    }
+	int	i;
 
-    for (int i = 1; args[i]; i++)
-    {
-        char *equal = strchr(args[i], '=');
-        char *key;
-        char *value;
-
-        if (equal)
-        {
-            int key_len = equal - args[i];
-            key = strndup(args[i], key_len);
-            value = strdup(equal + 1);
-        }
-        else
-        {
-            key = strdup(args[i]);
-            value = NULL;
-        }
-
-        if (!is_valid_env_var_key(key))
-        {
-            fprintf(stderr, "export: `%s': not a valid identifier\n", key);
-            free(key);
-            free(value);
-            continue;
-        }
-
-        set_env_var(env_list, key, value);
-
-        free(key);
-        free(value);
-    }
-    return 0;
+	if (!args[1])
+	{
+		print_export_reverse(*env_list);
+		return (0);
+	}
+	i = 1;
+	while (args[i])
+	{
+		handle_export_arg(args[i], env_list);
+		i++;
+	}
+	return (0);
 }

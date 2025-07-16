@@ -1,103 +1,124 @@
-#include <unistd.h>
-#include <sys/wait.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   execute_external.c                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fakoukou <fakoukou@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/16 06:20:38 by fakoukou          #+#    #+#             */
+/*   Updated: 2025/07/16 07:07:45 by fakoukou         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
-char **env_list_to_array(t_env *env_list)
+
+static void	free_env_aray(char **env_array, int count)
 {
-    int size = 0;
-    t_env *tmp = env_list;
-    while (tmp)
-    {
-        size++;
-        tmp = tmp->next;
-    }
+	int	i;
 
-    char **env_array = malloc(sizeof(char *) * (size + 1));
-    if (!env_array)
-        return NULL;
-
-    tmp = env_list;
-    int i = 0;
-    while (tmp)
-    {
-        int len = strlen(tmp->key) + strlen(tmp->value) + 2;
-        env_array[i] = malloc(len);
-        if (!env_array[i])
-        {
-            for (int j = 0; j < i; j++)
-                free(env_array[j]);
-            free(env_array);
-            return NULL;
-        }
-        snprintf(env_array[i], len, "%s=%s", tmp->key, tmp->value);
-        i++;
-        tmp = tmp->next;
-    }
-    env_array[i] = NULL;
-    return env_array;
+	i = 0;
+	while (i < count)
+	{
+		free(env_array[i]);
+		i++;
+	}
+	free(env_array);
 }
 
-char *get_env_path(t_env *env_list)
+static char	**fill_env_array(t_env *env_list, char **env_array)
 {
-    while (env_list)
-    {
-        if (strcmp(env_list->key, "PATH") == 0)
-            return env_list->value;
-        env_list = env_list->next;
-    }
-    return NULL;
+	t_env	*tmp;
+	int		i;
+	int		len;
+
+	tmp = env_list;
+	i = 0;
+	while (tmp)
+	{
+		len = strlen(tmp->key) + strlen(tmp->value) + 2;
+		env_array[i] = malloc(len);
+		if (!env_array[i])
+		{
+			free_env_aray(env_array, i);
+			return (NULL);
+		}
+		snprintf(env_array[i], len, "%s=%s", tmp->key, tmp->value);
+		i++;
+		tmp = tmp->next;
+	}
+	env_array[i] = NULL;
+	return (env_array);
 }
 
-char *find_in_path(char *cmd, t_env *env_list)
+char	**env_list_to_array(t_env *env_list)
 {
-    char *full_path;
-    char **dirs;
-    int i = 0;
+	int		size;
+	t_env	*tmp;
+	char	**env_array;
 
-    char *path = get_env_path(env_list);
-    if (!path)
-        return NULL;
-
-    dirs = ft_split(path, ':');
-    while (dirs[i])
-    {
-        full_path = malloc(strlen(dirs[i]) + strlen(cmd) + 2);
-        sprintf(full_path, "%s/%s", dirs[i], cmd);
-        if (access(full_path, X_OK) == 0)
-        {
-            free_array(dirs);
-            return full_path;
-        }
-        free(full_path);
-        i++;
-    }
-    free_array(dirs);
-    return NULL;
+	size = 0;
+	tmp = env_list;
+	while (tmp)
+	{
+		size++;
+		tmp = tmp->next;
+	}
+	env_array = malloc(sizeof(char *) * (size + 1));
+	if (!env_array)
+		return (NULL);
+	return (fill_env_array(env_list, env_array));
 }
 
-void execute_external(char **args, t_env *env_list)
+char	*find_in_path(char *cmd, t_env *env_list)
 {
-    pid_t pid;
-    int status;
-    char *cmd_path;
+	char	*full_path;
+	char	**dirs;
+	int		i;
+	char	*path;
 
-    cmd_path = find_in_path(args[0], env_list);
-    if (!cmd_path)
-    {
-        printf("Command not found: %s\n", args[0]);
-        return;
-    }
-    pid = fork();
-    if (pid == 0)
-    {
-        char **envp = env_list_to_array(env_list);
-        execve(cmd_path, args, envp);
-        perror("execve");
-        exit(EXIT_FAILURE);
-    }
-    else
-        waitpid(pid, &status, 0);
-    free(cmd_path);
+	i = 0;
+	path = get_env_path(env_list);
+	if (!path)
+		return (NULL);
+	dirs = ft_split(path, ':');
+	while (dirs[i])
+	{
+		full_path = malloc(strlen(dirs[i]) + strlen(cmd) + 2);
+		sprintf(full_path, "%s/%s", dirs[i], cmd);
+		if (access(full_path, X_OK) == 0)
+		{
+			free_array(dirs);
+			return (full_path);
+		}
+		free(full_path);
+		i++;
+	}
+	free_array(dirs);
+	return (NULL);
+}
+
+void	execute_external(char **args, t_env *env_list)
+{
+	pid_t	pid;
+	int		status;
+	char	*cmd_path;
+	char	**envp;
+
+	cmd_path = find_in_path(args[0], env_list);
+	if (!cmd_path)
+	{
+		printf("Command not found: %s\n", args[0]);
+		return ;
+	}
+	pid = fork();
+	if (pid == 0)
+	{
+		envp = env_list_to_array(env_list);
+		execve(cmd_path, args, envp);
+		perror("execve");
+		exit(EXIT_FAILURE);
+	}
+	else
+		waitpid(pid, &status, 0);
+	free(cmd_path);
 }
