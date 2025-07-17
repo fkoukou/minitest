@@ -6,7 +6,7 @@
 /*   By: fakoukou <fakoukou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/16 08:03:11 by fakoukou          #+#    #+#             */
-/*   Updated: 2025/07/16 08:58:46 by fakoukou         ###   ########.fr       */
+/*   Updated: 2025/07/17 20:04:11 by fakoukou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,17 @@ typedef struct s_prepare_args
 	size_t		i;
 	size_t		nb_cmd;
 }	t_prepare_args;
+typedef struct s_process_args
+{
+	t_env **env_list;
+	t_fork_exec_params *params;
+	int *prev_fd;
+	size_t nb_cmd;
+	t_command *cmd;
+	size_t i;
+	
+	/* data */
+}t_process_args;
 
 char					*find_in_path(char *cmd, t_env *env_list);
 int						ft_strlen(char *s1);

@@ -25,7 +25,7 @@ int	is_quoted_type(const char *str)
 	size_t	len;
 
 	len = strlen(str);
-	printf("%s\n", str);
+	// printf("%s\n", str);
 	if (len < 2)
 		return (0);
 	if (str[0] == '\'' && str[len - 1] == '\'')
