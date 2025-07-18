@@ -99,10 +99,12 @@ char	*find_in_path(char *cmd, t_env *env_list)
 
 void	execute_external(char **args, t_env *env_list)
 {
-	pid_t	pid;
-	int		status;
-	char	*cmd_path;
-	char	**envp;
+	pid_t				pid;
+	int					status;
+	char				*cmd_path;
+	char				**envp;
+	struct sigaction	old_sigint;
+	struct sigaction	ignore_sig;
 
 	cmd_path = find_in_path(args[0], env_list);
 	if (!cmd_path)
@@ -110,15 +112,34 @@ void	execute_external(char **args, t_env *env_list)
 		printf("Command not found: %s\n", args[0]);
 		return ;
 	}
+
+	// ignore SIGINT dans le parent
+	sigemptyset(&ignore_sig.sa_mask);
+	ignore_sig.sa_handler = SIG_IGN;
+	ignore_sig.sa_flags = 0;
+	sigaction(SIGINT, &ignore_sig, &old_sigint);
+
 	pid = fork();
 	if (pid == 0)
 	{
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
 		envp = env_list_to_array(env_list);
 		execve(cmd_path, args, envp);
 		perror("execve");
 		exit(EXIT_FAILURE);
 	}
 	else
+	{
 		waitpid(pid, &status, 0);
+
+		// restauration du handler
+		sigaction(SIGINT, &old_sigint, NULL);
+
+		// ✅ Si le fils a été tué par Ctrl+C, on affiche une ligne propre
+		if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
+			write(STDOUT_FILENO, "\n", 1);
+	}
+
 	free(cmd_path);
 }
