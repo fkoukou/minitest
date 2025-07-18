@@ -12,26 +12,27 @@
 
 #include "minishell.h"
 
-void	sigint_handler(int signo)
+void sigint_handler(int signo)
 {
-	(void)signo;
-	write(1, "\n", 1);
-	rl_on_new_line();
-	rl_replace_line("", 0);
-	rl_redisplay();
+    (void)signo;
+    write(STDOUT_FILENO, "\n", 1);   // saut de ligne propre
+    rl_on_new_line();                 // informer readline d’une nouvelle ligne
+    rl_replace_line("", 0);           // effacer la ligne courante
+    rl_redisplay();                   // réafficher le prompt
+}
+void setup_signal_handlers(void)
+{
+    struct sigaction sa;
+
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = sigint_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;   // Pour relancer automatiquement les appels bloquants
+    sigaction(SIGINT, &sa, NULL);
+
+    signal(SIGQUIT, SIG_IGN);
 }
 
-void	setup_signal_handlers(void)
-{
-	struct sigaction	sa;
-
-	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = sigint_handler;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_RESTART;
-	sigaction(SIGINT, &sa, NULL);
-	signal(SIGQUIT, SIG_IGN);
-}
 
 void	redirections_pipe(int index, int nb_cmd, int pipefd[2])
 {

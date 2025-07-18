@@ -40,13 +40,17 @@ char	*get_env_path(t_env *env_list)
 	return (NULL);
 }
 
-void	print_export_reverse(t_env *env_list)
+void print_export_reverse(t_env *env_list)
 {
 	if (!env_list)
-		return ;
+		return;
 	print_export_reverse(env_list->next);
-	printf("declare -x %s=\"%s\"\n", env_list->key, env_list->value);
+	if (env_list->value == NULL)
+		printf("declare -x %s\n", env_list->key);
+	else
+		printf("declare -x %s=\"%s\"\n", env_list->key, env_list->value);
 }
+
 
 int	is_valid_env_var_key(const char *key)
 {
@@ -66,31 +70,32 @@ int	is_valid_env_var_key(const char *key)
 	return (1);
 }
 
-void	set_env_var(t_env **env_list, const char *key, const char *value)
+void set_env_var(t_env **env_list, const char *key, const char *value)
 {
-	t_env	*tmp;
-	t_env	*new_node;
+    t_env *tmp;
+    t_env *new_node;
 
-	tmp = *env_list;
-	while (tmp)
-	{
-		if (strcmp(tmp->key, key) == 0)
-		{
-			free(tmp->value);
-			if (value)
-				tmp->value = strdup(value);
-			else
-				tmp->value = strdup("");
-			return ;
-		}
-		tmp = tmp->next;
-	}
-	new_node = malloc(sizeof(t_env));
-	new_node->key = strdup(key);
-	if (value)
-		new_node->value = strdup(value);
-	else
-		new_node->value = strdup("");
-	new_node->next = *env_list;
-	*env_list = new_node;
+    tmp = *env_list;
+    while (tmp)
+    {
+        if (strcmp(tmp->key, key) == 0)
+        {
+            free(tmp->value);
+            if (value)
+                tmp->value = strdup(value);
+            else
+                tmp->value = NULL;  
+            return;
+        }
+        tmp = tmp->next;
+    }
+    new_node = malloc(sizeof(t_env));
+    new_node->key = strdup(key);
+    if (value)
+        new_node->value = strdup(value);
+    else
+        new_node->value = NULL;  // garder NULL ici
+    new_node->next = *env_list;
+    *env_list = new_node;
 }
+
