@@ -36,8 +36,8 @@ char	*expand_arg(char *arg, t_env *env_list)
 		if (arg[i] == '$')
 		{
 			i++;
-			result = ft_strjoin_free(result, expand_variable(arg, &i,
-						env_list));
+			result = ft_strjoin_free(result,
+				expand_variable(arg, &i, env_list));
 		}
 		else
 		{

@@ -12,21 +12,62 @@
 
 #include "minishell.h"
 
-char	*expand_variable(const char *arg, int *i, t_env *env_list)
+char	*ft_itoa(int n)
 {
-	int		start;
-	char	*var;
-	char	*val;
+	char	*str;
+	int		len = (n <= 0) ? 1 : 0;
+	int		tmp = n;
 
-	start = *i;
-	while (arg[*i] && (ft_isalnum(arg[*i]) || arg[*i] == '_'))
-		(*i)++;
-	var = strndup(&arg[start], *i - start);
-	val = get_env_value(env_list, var);
-	free(var);
-	if (val)
-		return (strdup(val));
-	return (strdup(""));
+	while (tmp)
+	{
+		tmp /= 10;
+		len++;
+	}
+	str = malloc(len + 1);
+	if (!str)
+		return (NULL);
+	str[len--] = '\0';
+	if (n == 0)
+		str[0] = '0';
+	if (n < 0)
+	{
+		str[0] = '-';
+		n = -n;
+	}
+	while (n)
+	{
+		str[len--] = n % 10 + '0';
+		n /= 10;
+	}
+	return (str);
+}
+
+char *expand_variable(const char *arg, int *i, t_env *env_list)
+{
+    int     start;
+    char    *var;
+    char    *val;
+
+    if (arg[*i] == '?')  // Cas spécial pour $?
+    {
+        (*i)++;
+        return (ft_itoa(g_exit_status));
+    }
+
+    start = *i;
+    while (arg[*i] && (ft_isalnum(arg[*i]) || arg[*i] == '_'))
+        (*i)++;
+
+    if (*i == start)  // aucun caractère valide après $
+        return (strdup("$"));
+
+    var = strndup(&arg[start], *i - start);
+    val = get_env_value(env_list, var);
+    free(var);
+
+    if (val)
+        return (strdup(val));
+    return (strdup(""));
 }
 
 char	*get_env_path(t_env *env_list)

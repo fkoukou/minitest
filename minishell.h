@@ -28,6 +28,7 @@
 # endif
 
 # define CMD_NOT_FOUND 127
+extern int g_exit_status;
 
 typedef struct s_env
 {
@@ -131,7 +132,6 @@ int						is_space(char c);
 int						is_operator(char c);
 int						check_quotes(char *input, int i);
 t_token					*tokenize(char *input, t_env *env_list);
-char					*non_expand(char *input, int len);
 t_type					opperator_type(char *input);
 t_token					*new_token(char *value, int type, int quote);
 void					add_token(t_token **head, char *value, int type,
@@ -147,8 +147,7 @@ char					*build_token_nq(int *i, char *input, char *token,
 char					*find_token(char *token, char *input, int len,
 							t_env *env_list);
 int						is_heredoc(t_token *head);
-char					*token(t_token *head, char *input, int len, t_type type,
-							t_env *env_list);
+
 int						is_q_or_non(char *input, int len);
 
 int						builtin_cd(t_env *env, char **args);
@@ -214,5 +213,10 @@ void					handle_pipe_and_prev_fd(long unsigned int i,
 void					child_redirects(int prev_fd, int pipefd[2], size_t i,
 							size_t nb_cmd);
 void	sigint_handler(int signo);
+char	*non_expand(char *input, int len, int heredoc);
+char	*token(t_token **head, char *input, int len, t_type type,
+		t_env *env_list);
+char *ft_itoa(int n); // Déclaration manuelle si pas de header
+int ft_strisspace(const char *str);
 
 #endif

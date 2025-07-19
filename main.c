@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+int g_exit_status = 0;
 
 static void	handle_command(char *input, t_env **env_list)
 {
@@ -51,18 +52,21 @@ int	main(int argc, char **argv, char **envp)
 	setup_signal_handlers();
 	while (1)
 	{
-		input = readline("minishell> ");
-		if (!input)
-			break ;
-		if (input[0] == '\0')
-		{
-			free(input);
-			continue ;
-		}
-		add_history(input);
-		handle_command(input, &env_list);
-		free(input);
+    input = readline("minishell> ");
+    if (!input)  // Ctrl+D
+        break;
+
+    if (ft_strisspace(input))  // ignore lignes vides ou uniquement espaces
+    {
+        free(input);
+        continue;
+    }
+
+    add_history(input);
+    handle_command(input, &env_list);
+    free(input);
 	}
+
 	printf("exit\n");
 	free_env(env_list);
 	return (0);

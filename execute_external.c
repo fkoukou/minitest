@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
-
 static void	free_env_aray(char **env_array, int count)
 {
 	int	i;
@@ -152,6 +151,7 @@ void execute_external(char **args, t_env *env_list)
     if (!cmd_path)
     {
         printf("Command not found: %s\n", args[0]);
+        g_exit_status = 127; // commande non trouvée
         return;
     }
 
@@ -174,9 +174,19 @@ void execute_external(char **args, t_env *env_list)
     else if (pid > 0)
     {
         waitpid(pid, &status, 0);
+
+        if (WIFEXITED(status))
+            g_exit_status = WEXITSTATUS(status);   // ✅ succès : stocke le code de sortie
+        else if (WIFSIGNALED(status))
+            g_exit_status = 128 + WTERMSIG(status); // ✅ interruption par signal (ex: Ctrl+C)
+        else
+            g_exit_status = 1; // ✅ valeur par défaut
     }
     else
+    {
         perror("fork");
+        g_exit_status = 1;
+    }
 
     sigaction(SIGINT, &old_sigint, NULL); // restauration du handler SIGINT
     if (!is_path_cmd(args[0]))

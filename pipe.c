@@ -45,6 +45,7 @@ static void	wait_children(size_t nb_cmd)
 	}
 }
 
+
 void	handle_pipe_and_prev_fd(long unsigned int i, size_t nb_cmd,
 		int pipefd[2], int *prev_fd)
 {
