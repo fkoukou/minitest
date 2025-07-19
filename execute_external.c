@@ -136,51 +136,57 @@ void execute_external(char **args, t_env *env_list)
 {
     pid_t pid;
     int status;
-    char *cmd_path;
+    char *cmd_path = NULL;
     char **envp;
     struct sigaction old_sigint, ignore_sig;
 
     if (!args || !args[0])
         return;
 
-    if (is_path_cmd(args[0]))
-        cmd_path = args[0];
+    // Si c’est un chemin absolu/relatif OU trouvable avec access
+    if (is_path_cmd(args[0]) || access(args[0], X_OK) == 0)
+        cmd_path = strdup(args[0]);  // copier le chemin
     else
-        cmd_path = find_in_path(args[0], env_list);
+        cmd_path = find_in_path(args[0], env_list); // chercher dans PATH
 
-    if (!cmd_path)
+    if (!cmd_path || access(cmd_path, X_OK) != 0)
     {
         printf("Command not found: %s\n", args[0]);
-        g_exit_status = 127; // commande non trouvée
+        g_exit_status = 127;
+        free(cmd_path);
         return;
     }
 
+    // Ignore SIGINT dans le parent
     sigemptyset(&ignore_sig.sa_mask);
     ignore_sig.sa_handler = SIG_IGN;
     ignore_sig.sa_flags = 0;
-    sigaction(SIGINT, &ignore_sig, &old_sigint);  // ignore SIGINT dans le parent
+    sigaction(SIGINT, &ignore_sig, &old_sigint);
 
     envp = env_list_to_array(env_list);
     pid = fork();
+
     if (pid == 0)
     {
+        // Processus enfant
         signal(SIGINT, SIG_DFL);
         signal(SIGQUIT, SIG_DFL);
         execve(cmd_path, args, envp);
         perror("execve");
         free_str_array(envp);
+        free(cmd_path);
         exit(EXIT_FAILURE);
     }
     else if (pid > 0)
     {
+        // Processus parent
         waitpid(pid, &status, 0);
-
         if (WIFEXITED(status))
-            g_exit_status = WEXITSTATUS(status);   // ✅ succès : stocke le code de sortie
+            g_exit_status = WEXITSTATUS(status);
         else if (WIFSIGNALED(status))
-            g_exit_status = 128 + WTERMSIG(status); // ✅ interruption par signal (ex: Ctrl+C)
+            g_exit_status = 128 + WTERMSIG(status);
         else
-            g_exit_status = 1; // ✅ valeur par défaut
+            g_exit_status = 1;
     }
     else
     {
@@ -188,9 +194,8 @@ void execute_external(char **args, t_env *env_list)
         g_exit_status = 1;
     }
 
-    sigaction(SIGINT, &old_sigint, NULL); // restauration du handler SIGINT
-    if (!is_path_cmd(args[0]))
-        free(cmd_path);
+    sigaction(SIGINT, &old_sigint, NULL); // restaurer handler SIGINT
+    free(cmd_path);
     free_str_array(envp);
 
     if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)

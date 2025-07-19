@@ -23,6 +23,7 @@
 # include <string.h>
 # include <sys/wait.h>
 # include <unistd.h>
+# include <fcntl.h>
 # ifndef PATH_MAX
 #  define PATH_MAX 4096
 # endif
@@ -218,5 +219,7 @@ char	*token(t_token **head, char *input, int len, t_type type,
 		t_env *env_list);
 char *ft_itoa(int n); // Déclaration manuelle si pas de header
 int ft_strisspace(const char *str);
+void	read_heredoc_content(char *delimiter, int expand, char *filename,
+		t_env *env_list);
 
 #endif
