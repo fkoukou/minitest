@@ -11,88 +11,44 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
-static char	*append_char(char *res, char c)
+int builtin_echo(char **args, t_env *env_list)
 {
-	char	tmp[2];
+    bool n_flag = false;
+    int i = 1;
 
-	tmp[0] = c;
-	tmp[1] = '\0';
-	return (ft_strjoin_free(res, tmp));
+    (void)env_list; // inutilisé ici
+
+    // Vérifier si option -n (peut être plusieurs n, ex: -nnn)
+    while (args[i] && args[i][0] == '-' && args[i][1] == 'n')
+    {
+        int j = 2;
+        while (args[i][j] == 'n')
+            j++;
+        if (args[i][j] != '\0')
+            break;
+        n_flag = true;
+        i++;
+    }
+
+    while (args[i])
+    {
+        if (strcmp(args[i], "$?") == 0)
+            printf("%d", g_exit_status);
+        else
+            printf("%s", args[i]);
+
+        if (args[i + 1])
+            printf(" ");
+        i++;
+    }
+
+    if (!n_flag)
+        printf("\n");
+
+    return 0;
 }
 
-char	*expand_arg(char *arg, t_env *env_list)
-{
-	char	*result;
-	int		i;
-
-	result = malloc(1);
-	if (!result)
-		return (NULL);
-	result[0] = '\0';
-	i = 0;
-	while (arg[i])
-	{
-		if (arg[i] == '$')
-		{
-			i++;
-			result = ft_strjoin_free(result,
-				expand_variable(arg, &i, env_list));
-		}
-		else
-		{
-			result = append_char(result, arg[i]);
-			i++;
-		}
-	}
-	return (result);
-}
-
-static bool	has_n_flag(char *arg)
-{
-	int	j;
-
-	if (arg[0] != '-' || arg[1] != 'n')
-		return (false);
-	j = 2;
-	while (arg[j])
-	{
-		if (arg[j] != 'n')
-			return (false);
-		j++;
-	}
-	return (true);
-}
-
-static void	print_args(char **args, int start, t_env *env_list)
-{
-	char	*expanded;
-
-	while (args[start])
-	{
-		expanded = expand_arg(args[start], env_list);
-		printf("%s", expanded);
-		if (args[start + 1])
-			printf(" ");
-		free(expanded);
-		start++;
-	}
-}
-
-int	builtin_echo(char **args, t_env *env_list)
-{
-	int		i;
-	bool	n_flag;
-
-	i = 1;
-	n_flag = false;
-	while (args[i] && has_n_flag(args[i]))
-	{
-		n_flag = true;
-		i++;
-	}
-	print_args(args, i, env_list);
-	if (!n_flag)
-		printf("\n");
-	return (0);
-}

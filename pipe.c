@@ -18,20 +18,39 @@ void	close_prev_fd(int prev_fd)
 		close(prev_fd);
 }
 
-void	child_redirects(int prev_fd, int pipefd[2], size_t i, size_t nb_cmd)
+void child_redirects(int prev_fd, int pipefd[2], size_t i, size_t nb_cmd, t_command *cmd)
 {
-	if (prev_fd != -1)
-	{
-		dup2(prev_fd, STDIN_FILENO);
-		close(prev_fd);
-	}
-	if (i < nb_cmd - 1)
-	{
-		close(pipefd[0]);
-		dup2(pipefd[1], STDOUT_FILENO);
-		close(pipefd[1]);
-	}
+    if (prev_fd != -1)
+    {
+        dup2(prev_fd, STDIN_FILENO);
+        close(prev_fd);
+    }
+
+    if (i < nb_cmd - 1)
+    {
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[1]);
+    }
+
+    // Gestion heredoc redirection dans le child
+    t_redirect *redir = cmd->redirects;
+    while (redir)
+    {
+        if (redir->type == T_HEREDOC)
+        {
+            int fd = open(redir->filename, O_RDONLY);
+            if (fd != -1)
+            {
+                dup2(fd, STDIN_FILENO);
+                close(fd);
+                break; // on prend le premier heredoc seulement (normalement 1 seul par cmd)
+            }
+        }
+        redir = redir->next;
+    }
 }
+
 
 static void	wait_children(size_t nb_cmd)
 {
@@ -106,68 +125,28 @@ t_redirect *get_nth_heredoc(t_redirect *redirects, int n)
     return NULL;
 }
 
-void pipeline(t_env **env_list, t_command *cmd_list, size_t nb_cmd)
+void	pipeline(t_env **env_list, t_command *cmd_list, size_t nb_cmd)
 {
-    size_t i = 0;
-    int prev_fd = -1;
-    t_fork_exec_params params;
-    t_process_args args;
+	size_t				i;
+	int					prev_fd;
+	t_fork_exec_params	params;
+	t_process_args		args;
 
-    args.env_list = env_list;
-    args.params = &params;
-    args.prev_fd = &prev_fd;
-    args.nb_cmd = nb_cmd;
-
-    while (cmd_list)
-    {
-        int heredoc_count = count_heredocs(cmd_list->redirects);
-        char *final_filename = ".heredoc_final";
-
-        // Supprimer le fichier final si il existe (optionnel)
-        unlink(final_filename);
-
-        // Lire tous les heredocs dans des fichiers temporaires distincts
-        for (int j = heredoc_count - 1; j >= 0; j--)
-        {
-            t_redirect *heredoc = get_nth_heredoc(cmd_list->redirects, j);
-            if (heredoc)
-            {
-                // Création fichier temporaire .heredoc_tmp_j
-                char tmp_filename[64];
-                snprintf(tmp_filename, sizeof(tmp_filename), ".heredoc_tmp_%d", j);
-                read_heredoc_content(heredoc->filename, 1, tmp_filename, *env_list); 
-
-                // Concaténer dans le fichier final
-                int fd_final = open(final_filename, O_CREAT | O_WRONLY | O_APPEND, 0644);
-                int fd_tmp = open(tmp_filename, O_RDONLY);
-                if (fd_final != -1 && fd_tmp != -1)
-                {
-                    char buf[1024];
-                    ssize_t n;
-                    while ((n = read(fd_tmp, buf, sizeof(buf))) > 0)
-                        write(fd_final, buf, n);
-                    close(fd_tmp);
-                    close(fd_final);
-                }
-                unlink(tmp_filename);
-            }
-        }
-
-        // Rediriger stdin vers le fichier final une seule fois
-        int fd = open(final_filename, O_RDONLY);
-        if (fd != -1)
-        {
-            dup2(fd, STDIN_FILENO);
-            close(fd);
-        }
-
-        args.cmd = cmd_list;
-        args.i = i;
-        process_command(&args);
-        cmd_list = cmd_list->next_pipe;
-        i++;
-    }
-    wait_children(nb_cmd);
+	i = 0;
+	prev_fd = -1;
+	args.env_list = env_list;
+	args.params = &params;
+	args.prev_fd = &prev_fd;
+	args.nb_cmd = nb_cmd;
+	
+	while (cmd_list)
+	{
+		args.cmd = cmd_list;
+		args.i = i;
+		process_command(&args);
+		cmd_list = cmd_list->next_pipe;
+		i++;
+	}
+	wait_children(nb_cmd);
 }
-
 

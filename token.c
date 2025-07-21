@@ -39,6 +39,7 @@ char	*non_expand(char *input, int len, int heredoc)
 	token = malloc(len + 1);
 	if (!token)
 		return (NULL);
+	
 	while (i < len)
 	{
 		if ((input[i] == '\'' || input[i] == '"') && !heredoc)

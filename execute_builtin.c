@@ -12,21 +12,30 @@
 
 #include "minishell.h"
 
-static void	handle_redirections(t_redirect *redirects, t_env *env_list)
+static void handle_redirections(t_redirect *redirects, t_env *env_list)
 {
-	while (redirects)
-	{
-		if (redirects->type == T_REDIR_IN)
-			rediriger_entree(redirects->filename);
-		else if (redirects->type == T_REDIR_OUT)
-			rediriger_sortie(redirects->filename);
-		else if (redirects->type == T_REDIR_APPEND)
-			rediriger_sortie_append(redirects->filename);
-		else if (redirects->type == T_HEREDOC)
-			rediriger_heredoc(redirects->filename, env_list);
-		redirects = redirects->next;
-	}
+    int fd = -1;
+
+    fd = handle_all_heredocs(redirects, &env_list);
+    if (fd != -1)
+    {
+        dup2(fd, STDIN_FILENO);
+        close(fd);
+    }
+
+    while (redirects)
+    {
+        if (redirects->type == T_REDIR_IN)
+            rediriger_entree(redirects->filename);
+        else if (redirects->type == T_REDIR_OUT)
+            rediriger_sortie(redirects->filename);
+        else if (redirects->type == T_REDIR_APPEND)
+            rediriger_sortie_append(redirects->filename);
+        redirects = redirects->next;
+    }
 }
+
+
 
 int	execute_builtins_no_redir(t_env **env_list, t_command *cmd)
 {

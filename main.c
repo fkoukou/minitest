@@ -24,7 +24,7 @@ static void	handle_command(char *input, t_env **env_list)
 	tokens = tokenize(input, *env_list);
 	if (!tokens)
 		return ;
-	cmd_list = parse_pipeline(&tokens);
+	cmd_list = parse_pipeline(&tokens ,  env_list);
 	if (!cmd_list)
 		return ;
 	nb_cmd = size_cmd(cmd_list);

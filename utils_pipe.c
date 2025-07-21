@@ -47,22 +47,28 @@ static void	handle_fork_failure(void)
 	exit(1);
 }
 
-void	fork_and_exec(t_fork_exec_params *params)
+void fork_and_exec(t_fork_exec_params *params)
 {
-	pid_t	pid;
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        child_redirects(params->prev_fd, params->pipefd, params->i, params->nb_cmd, params->cmd);
 
-	pid = fork();
-	if (pid == 0)
-	{
-		child_redirects(params->prev_fd, params->pipefd, params->i,
-			params->nb_cmd);
-		if (execute_builtins(params->env_list, params->cmd) == CMD_NOT_FOUND)
-			test(params->cmd->args, *(params->env_list));
-		exit(EXIT_SUCCESS);
-	}
-	else if (pid < 0)
-		handle_fork_failure();
+        if (execute_builtins(params->env_list, params->cmd) == CMD_NOT_FOUND)
+        {
+            if (execvp(params->cmd->args[0], params->cmd->args) == -1)
+            {
+                perror(params->cmd->args[0]);
+                exit(EXIT_FAILURE);
+            }
+        }
+        exit(EXIT_SUCCESS);
+    }
+    else if (pid < 0)
+        handle_fork_failure();
 }
+
+
 
 void	prepare_params(t_fork_exec_params *params, t_prepare_args *args)
 {

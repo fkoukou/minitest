@@ -1,9 +1,9 @@
 #include "minishell.h"
 
-t_redirect	*new_redirect(int type, char *file, int quote)
+t_redirect	*new_redirect(int type, char *file, int quote, t_env **env_list)
 {
 	t_redirect	*new_node;
-
+	(void)env_list; // env_list not used in this function, but kept for consistency
 	new_node = malloc(sizeof(t_redirect));
 	if (!new_node)
 		return (NULL);
@@ -63,7 +63,7 @@ char	**add_arg(char *value, char **arg)
 	return (new_arg);
 }
 
-t_command	*parse_command(t_token **tokens)
+t_command	*parse_command(t_token **tokens, t_env **env_list)
 {
 	t_command	*cmd;
 	int			type;
@@ -84,7 +84,7 @@ t_command	*parse_command(t_token **tokens)
 			if (!*tokens || (*tokens)->type != T_WORD)
 				return (NULL);
 			cmd->redirects = add_redirect(&cmd->redirects, new_redirect(type,
-						(*tokens)->value, (*tokens)->quote));
+						(*tokens)->value, (*tokens)->quote,env_list));
 		}
 		else if ((*tokens)->type == T_WORD)
 			cmd->args = add_arg((*tokens)->value, cmd->args);
@@ -94,7 +94,7 @@ t_command	*parse_command(t_token **tokens)
 	return (cmd);
 }
 
-t_command	*parse_pipeline(t_token **tokens)
+t_command	*parse_pipeline(t_token **tokens, t_env **env_list)
 {
 	t_command *cmd;
 	t_command *head;
@@ -105,7 +105,7 @@ t_command	*parse_pipeline(t_token **tokens)
 		return (NULL); //free
 	while (*tokens)
 	{
-		cmd = parse_command(tokens);
+		cmd = parse_command(tokens,env_list);
 		if (!cmd)
 			return (NULL); //free
 		if (!head)
