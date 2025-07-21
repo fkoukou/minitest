@@ -222,6 +222,6 @@ int	handle_heredoc(char *raw_delimiter, t_env *env_list);
 // void	register_heredoc(t_redirect *redir, t_env **env_list);
 int	handle_all_heredocs(t_redirect *redir, t_env **env_list);
 void	child_redirects(int prev_fd, int pipefd[2], size_t i, size_t nb_cmd);
-int	open_herdoc(t_redirect *red);
+int	open_herdoc(t_redirect *red, t_env *env_list);
 void rediriger_heredoc(const char *fichier);
 #endif

@@ -110,33 +110,30 @@ int	is_valid_env_var_key(const char *key)
 	}
 	return (1);
 }
-
 void set_env_var(t_env **env_list, const char *key, const char *value)
 {
-    t_env *tmp;
-    t_env *new_node;
+    t_env *tmp = *env_list;
 
-    tmp = *env_list;
     while (tmp)
     {
         if (strcmp(tmp->key, key) == 0)
         {
-            free(tmp->value);
-            if (value)
+            if (value) // ne modifier la valeur que si elle est non NULL
+            {
+                free(tmp->value);
                 tmp->value = strdup(value);
-            else
-                tmp->value = NULL;  
+            }
+            // sinon ne rien faire, garder la valeur existante
             return;
         }
         tmp = tmp->next;
     }
-    new_node = malloc(sizeof(t_env));
+    // Ajouter nouvelle variable même si value == NULL
+    t_env *new_node = malloc(sizeof(t_env));
     new_node->key = strdup(key);
-    if (value)
-        new_node->value = strdup(value);
-    else
-        new_node->value = NULL;  // garder NULL ici
+    new_node->value = value ? strdup(value) : NULL;
     new_node->next = *env_list;
     *env_list = new_node;
 }
+
 

@@ -3,7 +3,7 @@
 t_redirect	*new_redirect(int type, char *file, int quote, t_env **env_list)
 {
 	t_redirect	*new_node;
-	(void)env_list; 
+	
 	new_node = malloc(sizeof(t_redirect));
 	if (!new_node)
 		return (NULL);
@@ -12,7 +12,7 @@ t_redirect	*new_redirect(int type, char *file, int quote, t_env **env_list)
 	// printf("%d", new_node->type);
 	if(new_node->type == 5)
 	{
-		open_herdoc(new_node); 
+		open_herdoc(new_node, *env_list); 
 	}
 	new_node->quote = quote;
 	new_node->next = NULL;

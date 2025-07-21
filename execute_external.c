@@ -96,7 +96,7 @@ char	*find_in_path(char *cmd, t_env *env_list)
 	return (NULL);
 }
 // utils.c ou un autre fichier utile
-int	ft_strisspace(const char *str)
+int ft_strisspace(const char *str)
 {
 	while (*str)
 	{
@@ -140,8 +140,12 @@ void execute_external(char **args, t_env *env_list)
     char **envp;
     struct sigaction old_sigint, ignore_sig;
 
-    if (!args || !args[0])
-        return;
+	if (!args[0] || args[0][0] == '\0' || ft_strisspace(args[0]))
+{
+    printf("Command not found: %s\n", args[0]);
+    g_exit_status = 127;
+    return;
+}
 
     // Si c’est un chemin absolu/relatif OU trouvable avec access
     if (is_path_cmd(args[0]) || access(args[0], X_OK) == 0)
