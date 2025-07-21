@@ -6,7 +6,7 @@
 /*   By: fakoukou <fakoukou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/16 08:03:11 by fakoukou          #+#    #+#             */
-/*   Updated: 2025/07/17 20:04:11 by fakoukou         ###   ########.fr       */
+/*   Updated: 2025/07/21 09:56:10 by fakoukou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ typedef struct s_redirect
 	int					quote;
 	t_type				type;
 	char				*filename;
+		char				*delimiter;  // mot-clé de fin (ex: EOF)
 	struct s_redirect	*next;
 }						t_redirect;
 
@@ -217,9 +218,10 @@ char *ft_itoa(int n); // Déclaration manuelle si pas de header
 int ft_strisspace(const char *str);
 void	read_heredoc_content(char *delimiter, int expand, char *filename,
 		t_env *env_list);
-char *expand_heredoc_line(char *line, t_env *env_list);
 int	handle_heredoc(char *raw_delimiter, t_env *env_list);
 // void	register_heredoc(t_redirect *redir, t_env **env_list);
 int	handle_all_heredocs(t_redirect *redir, t_env **env_list);
-void child_redirects(int prev_fd, int pipefd[2], size_t i, size_t nb_cmd, t_command *cmd);
+void	child_redirects(int prev_fd, int pipefd[2], size_t i, size_t nb_cmd);
+int	open_herdoc(t_redirect *red);
+void rediriger_heredoc(const char *fichier);
 #endif

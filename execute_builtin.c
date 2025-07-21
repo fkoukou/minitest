@@ -6,7 +6,7 @@
 /*   By: fakoukou <fakoukou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/16 06:20:12 by fakoukou          #+#    #+#             */
-/*   Updated: 2025/07/16 07:01:20 by fakoukou         ###   ########.fr       */
+/*   Updated: 2025/07/21 09:56:22 by fakoukou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,15 +14,7 @@
 
 static void handle_redirections(t_redirect *redirects, t_env *env_list)
 {
-    int fd = -1;
-
-    fd = handle_all_heredocs(redirects, &env_list);
-    if (fd != -1)
-    {
-        dup2(fd, STDIN_FILENO);
-        close(fd);
-    }
-
+	(void)env_list;
     while (redirects)
     {
         if (redirects->type == T_REDIR_IN)
@@ -31,10 +23,23 @@ static void handle_redirections(t_redirect *redirects, t_env *env_list)
             rediriger_sortie(redirects->filename);
         else if (redirects->type == T_REDIR_APPEND)
             rediriger_sortie_append(redirects->filename);
+		else if (redirects->type == T_HEREDOC)
+            rediriger_heredoc(redirects->filename);
         redirects = redirects->next;
     }
 }
-
+void rediriger_heredoc(const char *fichier)
+{
+	int	fd;
+	fd = open(fichier, O_RDONLY);
+	if (fd < 0)
+	{
+		perror("open heredoc");
+		return ;
+	}
+	dup2(fd, STDIN_FILENO);
+	close(fd);
+}
 
 
 int	execute_builtins_no_redir(t_env **env_list, t_command *cmd)

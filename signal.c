@@ -6,12 +6,12 @@
 /*   By: fakoukou <fakoukou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/16 06:31:29 by fakoukou          #+#    #+#             */
-/*   Updated: 2025/07/16 08:54:35 by fakoukou         ###   ########.fr       */
+/*   Updated: 2025/07/21 08:49:02 by fakoukou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
+#include <signal.h>
 void sigint_handler(int signo)
 {
     (void)signo;

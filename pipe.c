@@ -6,7 +6,7 @@
 /*   By: fakoukou <fakoukou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/16 08:39:44 by fakoukou          #+#    #+#             */
-/*   Updated: 2025/07/17 20:00:43 by fakoukou         ###   ########.fr       */
+/*   Updated: 2025/07/21 08:29:15 by fakoukou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,39 +18,20 @@ void	close_prev_fd(int prev_fd)
 		close(prev_fd);
 }
 
-void child_redirects(int prev_fd, int pipefd[2], size_t i, size_t nb_cmd, t_command *cmd)
+void	child_redirects(int prev_fd, int pipefd[2], size_t i, size_t nb_cmd)
 {
-    if (prev_fd != -1)
-    {
-        dup2(prev_fd, STDIN_FILENO);
-        close(prev_fd);
-    }
-
-    if (i < nb_cmd - 1)
-    {
-        close(pipefd[0]);
-        dup2(pipefd[1], STDOUT_FILENO);
-        close(pipefd[1]);
-    }
-
-    // Gestion heredoc redirection dans le child
-    t_redirect *redir = cmd->redirects;
-    while (redir)
-    {
-        if (redir->type == T_HEREDOC)
-        {
-            int fd = open(redir->filename, O_RDONLY);
-            if (fd != -1)
-            {
-                dup2(fd, STDIN_FILENO);
-                close(fd);
-                break; // on prend le premier heredoc seulement (normalement 1 seul par cmd)
-            }
-        }
-        redir = redir->next;
-    }
+	if (prev_fd != -1)
+	{
+		dup2(prev_fd, STDIN_FILENO);
+		close(prev_fd);
+	}
+	if (i < nb_cmd - 1)
+	{
+		close(pipefd[0]);
+		dup2(pipefd[1], STDOUT_FILENO);
+		close(pipefd[1]);
+	}
 }
-
 
 static void	wait_children(size_t nb_cmd)
 {
