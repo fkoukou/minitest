@@ -12,16 +12,27 @@
 
 #include "minishell.h"
 
+void    free_arg(char **arg)
+{
+        int     i;
+
+        i = 0;
+        while (arg[i])
+                free(arg[i++]);
+        free(arg);
+}
+
 void	free_tokens(t_token *head)
 {
 	t_token	*tmp;
 
 	while (head)
 	{
-		tmp = head->next;
-		free(head->value);
-		free(head);
-		head = tmp;
+		tmp = head;
+        head = head->next;
+        if (tmp->value)
+            free(tmp->value);
+        free(tmp);
 	}
 }
 
@@ -32,7 +43,8 @@ void	free_redirects(t_redirect *redir)
 	while (redir)
 	{
 		tmp = redir->next;
-		free(redir->filename);
+		if (redir->filename)
+			free(redir->filename);
 		free(redir);
 		redir = tmp;
 	}
@@ -41,18 +53,12 @@ void	free_redirects(t_redirect *redir)
 void	free_command(t_command *cmd)
 {
 	t_command	*tmp;
-	int			i;
 
 	while (cmd)
 	{
 		tmp = cmd->next_pipe;
 		if (cmd->args)
-		{
-			i = 0;
-			while (cmd->args[i])
-				free(cmd->args[i++]);
-			free(cmd->args);
-		}
+			free_arg(cmd->args);
 		free_redirects(cmd->redirects);
 		free(cmd);
 		cmd = tmp;

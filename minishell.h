@@ -144,8 +144,9 @@ t_quote_type			check_type_quotes(char *input, int len, int single_q,
 char					*add_expansion(int start, int end, char *input);
 char					*expansion(int *i, int len, char *input,
 							t_env *env_list);
-char					*build_token_nq(int *i, char *input, char *token,
-							int len, t_env *env_list);
+char    *build_token_nq(char *input, char *token, int *i, int len);
+int     is_expand(int *i, char *input);
+int	token_size(char *input);
 char					*find_token(char *token, char *input, int len,
 							t_env *env_list);
 int						is_heredoc(t_token *head);
@@ -224,4 +225,7 @@ int	handle_all_heredocs(t_redirect *redir, t_env **env_list);
 void	child_redirects(int prev_fd, int pipefd[2], size_t i, size_t nb_cmd);
 int	open_herdoc(t_redirect *red, t_env *env_list);
 void rediriger_heredoc(const char *fichier);
+int ft_iswhitespaces(char c);
+char    **ft_split_whitespaces(char *s);
+void    free_arg(char **arg);
 #endif

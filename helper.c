@@ -61,10 +61,12 @@ char	*ft_strjoin(char *s1, char *s2)
 		s3[i] = s1[i];
 		i++;
 	}
+	free(s1);
 	j = 0;
 	while (s2[j])
 		s3[i++] = s2[j++];
 	s3[i] = '\0';
+	free(s2);
 	return (s3);
 }
 

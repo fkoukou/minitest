@@ -3,6 +3,7 @@
 int	token_size(char *input)
 {
 	int	i;
+	int	r;
 
 	i = 0;
 	if (is_operator(input[i]))
@@ -17,9 +18,10 @@ int	token_size(char *input)
 	{
 		if (input[i] == '\'' || input[i] == '"')
 		{
-			i += check_quotes(input, i);
-			if (i == -1)
+			r = check_quotes(input, i);
+			if (r == -1)
 				return (-1);
+			i += r;
 		}
 		else
 			i++;
@@ -39,7 +41,6 @@ char	*non_expand(char *input, int len, int heredoc)
 	token = malloc(len + 1);
 	if (!token)
 		return (NULL);
-	
 	while (i < len)
 	{
 		if ((input[i] == '\'' || input[i] == '"') && !heredoc)
@@ -53,53 +54,66 @@ char	*non_expand(char *input, int len, int heredoc)
 			token[j++] = input[i++];
 	}
 	token[j] = '\0';
-	// printf("%s\n", token);
 	return (token);
 }
 
-char	*find_token(char *token, char *input, int len, t_env *env_list)
+int     is_expand(int *i, char *input)
+{
+        if (input[*i] == '$' && input[(*i) + 1] != '$' &&
+                (ft_isalnum(input[(*i) + 1]) || input[(*i) + 1] == '_'))
+                return (1);
+        return (0);
+}
+
+char	*build_token_sq(char *input, char *token, int *i)
+{
+	int	end;
+	end = check_quotes(input, *i) + *i;
+        token = ft_strjoin(token, strnd(input, *i + 1, (end - 1)));//*add free
+        *i = end;
+	return(token);
+}
+char	*find_token(t_token **head, char *input, int len, t_env *env_list)
 {
 	int	i;
-	int	end;
+	char	*token;
 
+	token = strdup("");
 	i = 0;
 	while (i < len)
 	{
 		if (input[i] == '\'')
-		{
-			end = check_quotes(input, i) + i;
-			token = ft_strjoin(token, strnd(input, i + 1, (end - 1)));
-			i = end;
-		}
+			token = build_token_sq(input, token, &i);
 		else if (input[i] == '"')
 		{
 			i++;
 			while (i < len && input[i] != '"')
-				token = build_token_nq(&i, input, token, len, env_list);
+				token = build_token_dq(&i, input, token, env_list);
 			i++;
 		}
 		else
 		{
-			token = build_token_nq(&i, input, token, len, env_list);
+			if (is_expand(&i, input))
+				token = build_token_expand_nq(head, expansion(&i, len, input, env_list), token);
+			else
+				token = build_token_nq(input, token, &i, len);
 		}
 	}
 	return (token);
 }
 
-char	*token(t_token **head, char *input, int len, t_type type,
-		t_env *env_list)
+char	*token(t_token **head, char *input, int len, t_env *env_list)
 {
 	t_quote_type	type_quote;
-	char			*token;
+	t_type	type;
 
+	type = opperator_type(input);
 	type_quote = check_type_quotes(input, len, 0, 0);
 	if (type == T_WORD && is_heredoc(*head))
-		return (non_expand(input, len, 1));
+                return (non_expand(input, len, 1));
 	else if (type != T_WORD || (type == T_WORD && type_quote == Q_SINGLE))
 		return (non_expand(input, len, 0));
-	token = strdup("");
-	return (find_token(token, input, len, env_list));
-	// Passer env_list à find_token
+	return (find_token(head, input, len, env_list));
 }
 
 t_token	*tokenize(char *input, t_env *env_list)
@@ -108,7 +122,6 @@ t_token	*tokenize(char *input, t_env *env_list)
 	int		i;
 	int		len;
 	char	*value;
-	int		type_quote;
 
 	i = 0;
 	head = NULL;
@@ -121,10 +134,11 @@ t_token	*tokenize(char *input, t_env *env_list)
 		len = token_size(&input[i]);
 		if (len == -1)
 			return (NULL);
-		type_quote = is_q_or_non(&input[i], len);
-		value = token(&head, &input[i], len, opperator_type(&input[i]),
-						env_list); // <-- ici on passe env_list
-		add_token(&head, value, opperator_type(&input[i]), type_quote);
+		value = token(&head, &input[i], len, env_list);
+		if (value[0])
+			add_token(&head, value, opperator_type(&input[i]), is_q_or_non(&input[i], len));
+		else
+			free (value);
 		i += len;
 	}
 	return (head);

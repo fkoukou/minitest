@@ -1,5 +1,12 @@
 #include "minishell.h"
 
+int ft_iswhitespaces(char c)
+{
+        if (c == ' ' || c == '\t' || c == '\n')
+                return (1);
+        return (0);
+}
+
 int	is_heredoc(t_token *head)
 {
 	if (!head)

@@ -26,7 +26,7 @@ int	check_quotes(char *input, int i)
 	}
 	if (input[i] == quote)
 		return (count + 1);
-	return (-1);
+	return (write (2, "syntax error: unclosed quotes\n", 30), -1);
 }
 
 t_quote_type	ft_next_tq(int single_q, int double_q, int none_q)
